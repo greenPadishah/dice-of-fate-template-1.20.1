@@ -9,9 +9,9 @@
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/greenPadishah/dice-of-fate-template-1.20.1"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/dice-of-fate/icon.png",
 	"environment": "*",
 	"entrypoints": {
