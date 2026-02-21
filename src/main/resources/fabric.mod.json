@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "dice-of-fate",
+	"version": "${version}",
+	"name": "Dice of Fate",
+	"description": "This is a Mod which adds a dice with different outcomes to the Game",
+	"authors": [
+		"Bozkurt"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/dice-of-fate/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.bozkurt.dof.DiceOfFate"
+		],
+		"client": [
+			"net.bozkurt.dof.DiceOfFateClient"
+		],
+		"fabric-datagen": [
+			"net.bozkurt.dof.DiceOfFateDataGenerator"
+		]
+	},
+	"mixins": [
+		"dice-of-fate.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}
