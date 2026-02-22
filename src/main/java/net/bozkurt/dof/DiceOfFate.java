@@ -1,5 +1,6 @@
 package net.bozkurt.dof;
 
+import net.bozkurt.dof.item.ModItems;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -11,6 +12,6 @@ public class DiceOfFate implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		
+		ModItems.registerModItems();
 	}
 }
