@@ -1,5 +1,6 @@
 package net.bozkurt.dof;
 
+import net.bozkurt.dof.item.ModItemGroups;
 import net.bozkurt.dof.item.ModItems;
 import net.fabricmc.api.ModInitializer;
 
@@ -12,6 +13,7 @@ public class DiceOfFate implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ModItemGroups.registerModItemGroups();
 		ModItems.registerModItems();
 	}
 }

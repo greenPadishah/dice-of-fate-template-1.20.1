@@ -13,10 +13,8 @@ import net.minecraft.util.Identifier;
 public class ModItems {
     
     public static final Item DICE_OF_FATE = registerItem("dice_of_fate", new Item(new FabricItemSettings()));
+    public static final Item DICE_OF_FATE_BLACK = registerItem("dice_of_fate_black", new Item(new FabricItemSettings()));
     
-    private static void addItemsToIngredientsTabItemGroup(FabricItemGroupEntries entries) {
-        entries.add(DICE_OF_FATE);
-    }
     
     private static Item registerItem (String name, Item item) {
         return Registry.register(Registries.ITEM, new Identifier(DiceOfFate.MOD_ID, name), item);
@@ -25,6 +23,5 @@ public class ModItems {
     public static void registerModItems() {
         DiceOfFate.LOGGER.info("Registering Mod Items for " + DiceOfFate.MOD_ID);
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(ModItems::addItemsToIngredientsTabItemGroup);
     }
 }
