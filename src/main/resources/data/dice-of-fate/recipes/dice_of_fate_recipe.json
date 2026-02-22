@@ -1,0 +1,21 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "###",
+        "#S#",
+        "###"
+    ],
+    "key": {
+        "#": {
+            "item": "minecraft:white_wool"
+        },
+        "S": {
+            "item": "minecraft:nether_star"
+        }
+    },
+    "result": {
+        "item": "dice-of-fate:dice_of_fate",
+        "count": 1
+    }
+}

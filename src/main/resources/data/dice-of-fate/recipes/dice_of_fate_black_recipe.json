@@ -1,0 +1,11 @@
+{
+    "type": "minecraft:smelting",
+    "category": "misc",
+    "cookingtime": 200,
+    "experience": 0.1,
+    "group": "dice_of_fate",
+    "ingredient": {
+        "item": "dice-of-fate:dice_of_fate"
+    },
+    "result": "dice-of-fate:dice_of_fate_black"
+    }
