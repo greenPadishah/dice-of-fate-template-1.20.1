@@ -43,7 +43,9 @@ public final class DiceEffectScheduler {
             if (player != null) {
                 entry.effect.apply(player, player.getRandom());
                 if (player.isCreative()) {
-                    player.sendMessage(Text.literal("Dice effect: " + entry.effect.id()), false);
+                    String translationKey = "effect.dice-of-fate." + entry.effect.id();
+                    Text translatedName = Text.translatable(translationKey);
+                    player.sendMessage(Text.literal("Dice effect: ").append(translatedName), false);
                 }
             }
             iterator.remove();

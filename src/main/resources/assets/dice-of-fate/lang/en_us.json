@@ -1,5 +1,24 @@
 {
     "item.dice-of-fate.dice_of_fate": "Dice of Fate",
     "item.dice-of-fate.dice_of_fate_black": "Black Dice of Fate",
-    "itemgroup.dice_of_fate": "Dice of Fate"
+    "item.dice-of-fate.dice_of_fate_red": "Red Dice of Fate",
+    "itemgroup.dice_of_fate": "Dice of Fate",
+
+    "_comment": "WHITE DICE - GOOD EFFECTS",
+    "effect.dice-of-fate.white_full_health": "Full Health Recovery",
+    "effect.dice-of-fate.white_full_hunger": "Feast",
+    "effect.dice-of-fate.white_upgrade_gear": "Gear Upgrade",
+
+    "_comment2": "WHITE DICE - BAD EFFECTS",
+    "effect.dice-of-fate.white_half_heart": "Half Heart Curse",
+    "effect.dice-of-fate.white_empty_hunger": "Starvation",
+    "effect.dice-of-fate.white_downgrade_gear": "Gear Downgrade",
+
+    "_comment3": "BLACK DICE - BAD EFFECTS",
+    "effect.dice-of-fate.black_remove_diamonds": "Diamond Curse",
+    "effect.dice-of-fate.black_stash_and_launch": "Launched into the Void",
+
+    "_comment4": "BLACK DICE - GOOD EFFECTS",
+    "effect.dice-of-fate.black_fill_stacks": "Full Stacks",
+    "effect.dice-of-fate.black_good_loot_chest": "Treasure Chest"
 }

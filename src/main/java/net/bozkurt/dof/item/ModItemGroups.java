@@ -17,7 +17,7 @@ public static final ItemGroup DICE_OF_FATE_GROUP = Registry.register(Registries.
     .icon(() -> new ItemStack(ModItems.DICE_OF_FATE)).entries((displayContext, entries) -> {
         entries.add(ModItems.DICE_OF_FATE);
         entries.add(ModItems.DICE_OF_FATE_BLACK);
-
+        entries.add(ModItems.DICE_OF_FATE_RED);
 
     }).build()); 
 

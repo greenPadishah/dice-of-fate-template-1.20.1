@@ -24,27 +24,119 @@ import net.minecraft.util.collection.DefaultedList;
 
 public final class DiceEffects {
     private static final Map<Item, Item> UPGRADE_MAP = Map.ofEntries(
-        Map.entry(Items.IRON_SWORD, Items.DIAMOND_SWORD),
-        Map.entry(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE),
-        Map.entry(Items.IRON_AXE, Items.DIAMOND_AXE),
-        Map.entry(Items.IRON_SHOVEL, Items.DIAMOND_SHOVEL),
-        Map.entry(Items.IRON_HOE, Items.DIAMOND_HOE),
-        Map.entry(Items.IRON_HELMET, Items.DIAMOND_HELMET),
-        Map.entry(Items.IRON_CHESTPLATE, Items.DIAMOND_CHESTPLATE),
-        Map.entry(Items.IRON_LEGGINGS, Items.DIAMOND_LEGGINGS),
-        Map.entry(Items.IRON_BOOTS, Items.DIAMOND_BOOTS)
+        // Tools: wooden → stone → iron → gold → diamond → netherite
+        Map.entry(Items.WOODEN_SWORD, Items.STONE_SWORD),
+        Map.entry(Items.STONE_SWORD, Items.IRON_SWORD),
+        Map.entry(Items.IRON_SWORD, Items.GOLDEN_SWORD),
+        Map.entry(Items.GOLDEN_SWORD, Items.DIAMOND_SWORD),
+        Map.entry(Items.DIAMOND_SWORD, Items.NETHERITE_SWORD),
+        
+        Map.entry(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE),
+        Map.entry(Items.STONE_PICKAXE, Items.IRON_PICKAXE),
+        Map.entry(Items.IRON_PICKAXE, Items.GOLDEN_PICKAXE),
+        Map.entry(Items.GOLDEN_PICKAXE, Items.DIAMOND_PICKAXE),
+        Map.entry(Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE),
+        
+        Map.entry(Items.WOODEN_AXE, Items.STONE_AXE),
+        Map.entry(Items.STONE_AXE, Items.IRON_AXE),
+        Map.entry(Items.IRON_AXE, Items.GOLDEN_AXE),
+        Map.entry(Items.GOLDEN_AXE, Items.DIAMOND_AXE),
+        Map.entry(Items.DIAMOND_AXE, Items.NETHERITE_AXE),
+        
+        Map.entry(Items.WOODEN_SHOVEL, Items.STONE_SHOVEL),
+        Map.entry(Items.STONE_SHOVEL, Items.IRON_SHOVEL),
+        Map.entry(Items.IRON_SHOVEL, Items.GOLDEN_SHOVEL),
+        Map.entry(Items.GOLDEN_SHOVEL, Items.DIAMOND_SHOVEL),
+        Map.entry(Items.DIAMOND_SHOVEL, Items.NETHERITE_SHOVEL),
+        
+        Map.entry(Items.WOODEN_HOE, Items.STONE_HOE),
+        Map.entry(Items.STONE_HOE, Items.IRON_HOE),
+        Map.entry(Items.IRON_HOE, Items.GOLDEN_HOE),
+        Map.entry(Items.GOLDEN_HOE, Items.DIAMOND_HOE),
+        Map.entry(Items.DIAMOND_HOE, Items.NETHERITE_HOE),
+        
+        // Armor: leather → chainmail → iron → gold → diamond → netherite
+        Map.entry(Items.LEATHER_HELMET, Items.CHAINMAIL_HELMET),
+        Map.entry(Items.CHAINMAIL_HELMET, Items.IRON_HELMET),
+        Map.entry(Items.IRON_HELMET, Items.GOLDEN_HELMET),
+        Map.entry(Items.GOLDEN_HELMET, Items.DIAMOND_HELMET),
+        Map.entry(Items.DIAMOND_HELMET, Items.NETHERITE_HELMET),
+        
+        Map.entry(Items.LEATHER_CHESTPLATE, Items.CHAINMAIL_CHESTPLATE),
+        Map.entry(Items.CHAINMAIL_CHESTPLATE, Items.IRON_CHESTPLATE),
+        Map.entry(Items.IRON_CHESTPLATE, Items.GOLDEN_CHESTPLATE),
+        Map.entry(Items.GOLDEN_CHESTPLATE, Items.DIAMOND_CHESTPLATE),
+        Map.entry(Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE),
+        
+        Map.entry(Items.LEATHER_LEGGINGS, Items.CHAINMAIL_LEGGINGS),
+        Map.entry(Items.CHAINMAIL_LEGGINGS, Items.IRON_LEGGINGS),
+        Map.entry(Items.IRON_LEGGINGS, Items.GOLDEN_LEGGINGS),
+        Map.entry(Items.GOLDEN_LEGGINGS, Items.DIAMOND_LEGGINGS),
+        Map.entry(Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS),
+        
+        Map.entry(Items.LEATHER_BOOTS, Items.CHAINMAIL_BOOTS),
+        Map.entry(Items.CHAINMAIL_BOOTS, Items.IRON_BOOTS),
+        Map.entry(Items.IRON_BOOTS, Items.GOLDEN_BOOTS),
+        Map.entry(Items.GOLDEN_BOOTS, Items.DIAMOND_BOOTS),
+        Map.entry(Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS)
     );
 
     private static final Map<Item, Item> DOWNGRADE_MAP = Map.ofEntries(
-        Map.entry(Items.DIAMOND_SWORD, Items.IRON_SWORD),
-        Map.entry(Items.DIAMOND_PICKAXE, Items.IRON_PICKAXE),
-        Map.entry(Items.DIAMOND_AXE, Items.IRON_AXE),
-        Map.entry(Items.DIAMOND_SHOVEL, Items.IRON_SHOVEL),
-        Map.entry(Items.DIAMOND_HOE, Items.IRON_HOE),
-        Map.entry(Items.DIAMOND_HELMET, Items.IRON_HELMET),
-        Map.entry(Items.DIAMOND_CHESTPLATE, Items.IRON_CHESTPLATE),
-        Map.entry(Items.DIAMOND_LEGGINGS, Items.IRON_LEGGINGS),
-        Map.entry(Items.DIAMOND_BOOTS, Items.IRON_BOOTS)
+        // Tools: netherite → diamond → gold → iron → stone → wooden
+        Map.entry(Items.NETHERITE_SWORD, Items.DIAMOND_SWORD),
+        Map.entry(Items.DIAMOND_SWORD, Items.GOLDEN_SWORD),
+        Map.entry(Items.GOLDEN_SWORD, Items.IRON_SWORD),
+        Map.entry(Items.IRON_SWORD, Items.STONE_SWORD),
+        Map.entry(Items.STONE_SWORD, Items.WOODEN_SWORD),
+        
+        Map.entry(Items.NETHERITE_PICKAXE, Items.DIAMOND_PICKAXE),
+        Map.entry(Items.DIAMOND_PICKAXE, Items.GOLDEN_PICKAXE),
+        Map.entry(Items.GOLDEN_PICKAXE, Items.IRON_PICKAXE),
+        Map.entry(Items.IRON_PICKAXE, Items.STONE_PICKAXE),
+        Map.entry(Items.STONE_PICKAXE, Items.WOODEN_PICKAXE),
+        
+        Map.entry(Items.NETHERITE_AXE, Items.DIAMOND_AXE),
+        Map.entry(Items.DIAMOND_AXE, Items.GOLDEN_AXE),
+        Map.entry(Items.GOLDEN_AXE, Items.IRON_AXE),
+        Map.entry(Items.IRON_AXE, Items.STONE_AXE),
+        Map.entry(Items.STONE_AXE, Items.WOODEN_AXE),
+        
+        Map.entry(Items.NETHERITE_SHOVEL, Items.DIAMOND_SHOVEL),
+        Map.entry(Items.DIAMOND_SHOVEL, Items.GOLDEN_SHOVEL),
+        Map.entry(Items.GOLDEN_SHOVEL, Items.IRON_SHOVEL),
+        Map.entry(Items.IRON_SHOVEL, Items.STONE_SHOVEL),
+        Map.entry(Items.STONE_SHOVEL, Items.WOODEN_SHOVEL),
+        
+        Map.entry(Items.NETHERITE_HOE, Items.DIAMOND_HOE),
+        Map.entry(Items.DIAMOND_HOE, Items.GOLDEN_HOE),
+        Map.entry(Items.GOLDEN_HOE, Items.IRON_HOE),
+        Map.entry(Items.IRON_HOE, Items.STONE_HOE),
+        Map.entry(Items.STONE_HOE, Items.WOODEN_HOE),
+        
+        // Armor: netherite → diamond → gold → iron → chainmail → leather
+        Map.entry(Items.NETHERITE_HELMET, Items.DIAMOND_HELMET),
+        Map.entry(Items.DIAMOND_HELMET, Items.GOLDEN_HELMET),
+        Map.entry(Items.GOLDEN_HELMET, Items.IRON_HELMET),
+        Map.entry(Items.IRON_HELMET, Items.CHAINMAIL_HELMET),
+        Map.entry(Items.CHAINMAIL_HELMET, Items.LEATHER_HELMET),
+        
+        Map.entry(Items.NETHERITE_CHESTPLATE, Items.DIAMOND_CHESTPLATE),
+        Map.entry(Items.DIAMOND_CHESTPLATE, Items.GOLDEN_CHESTPLATE),
+        Map.entry(Items.GOLDEN_CHESTPLATE, Items.IRON_CHESTPLATE),
+        Map.entry(Items.IRON_CHESTPLATE, Items.CHAINMAIL_CHESTPLATE),
+        Map.entry(Items.CHAINMAIL_CHESTPLATE, Items.LEATHER_CHESTPLATE),
+        
+        Map.entry(Items.NETHERITE_LEGGINGS, Items.DIAMOND_LEGGINGS),
+        Map.entry(Items.DIAMOND_LEGGINGS, Items.GOLDEN_LEGGINGS),
+        Map.entry(Items.GOLDEN_LEGGINGS, Items.IRON_LEGGINGS),
+        Map.entry(Items.IRON_LEGGINGS, Items.CHAINMAIL_LEGGINGS),
+        Map.entry(Items.CHAINMAIL_LEGGINGS, Items.LEATHER_LEGGINGS),
+        
+        Map.entry(Items.NETHERITE_BOOTS, Items.DIAMOND_BOOTS),
+        Map.entry(Items.DIAMOND_BOOTS, Items.GOLDEN_BOOTS),
+        Map.entry(Items.GOLDEN_BOOTS, Items.IRON_BOOTS),
+        Map.entry(Items.IRON_BOOTS, Items.CHAINMAIL_BOOTS),
+        Map.entry(Items.CHAINMAIL_BOOTS, Items.LEATHER_BOOTS)
     );
 
     private static final Set<Item> DIAMOND_ITEMS = Set.of(
@@ -58,7 +150,18 @@ public final class DiceEffects {
         Items.DIAMOND_CHESTPLATE,
         Items.DIAMOND_LEGGINGS,
         Items.DIAMOND_BOOTS,
-        Items.DIAMOND_HORSE_ARMOR
+        Items.DIAMOND_HORSE_ARMOR,
+        Items.NETHERITE_INGOT,
+        Items.NETHERITE_SCRAP,
+        Items.NETHERITE_SWORD,
+        Items.NETHERITE_PICKAXE,
+        Items.NETHERITE_AXE,
+        Items.NETHERITE_SHOVEL,
+        Items.NETHERITE_HOE,
+        Items.NETHERITE_HELMET,
+        Items.NETHERITE_CHESTPLATE,
+        Items.NETHERITE_LEGGINGS,
+        Items.NETHERITE_BOOTS
     );
 
     private static final List<Item> GOOD_LOOT = List.of(

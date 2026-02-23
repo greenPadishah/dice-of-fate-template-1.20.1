@@ -2,10 +2,14 @@ package net.bozkurt.dof;
 
 import net.bozkurt.dof.network.DiceOfFateNetworking;
 import net.bozkurt.dof.client.screen.WagerScreen;
+import net.bozkurt.dof.client.screen.RedDiceEffectScreen;
+import net.bozkurt.dof.client.render.ThrownDiceEntityRenderer;
 import net.bozkurt.dof.effect.DiceType;
+import net.bozkurt.dof.entity.ModEntities;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -28,6 +32,8 @@ public class DiceOfFateClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        EntityRendererRegistry.register(ModEntities.THROWN_DICE, ThrownDiceEntityRenderer::new);
+        
         ClientPlayNetworking.registerGlobalReceiver(DiceOfFateNetworking.DICE_ROLL_PACKET, (client, handler, buf, responseSender) -> {
             int roll = buf.readInt();
             client.execute(() -> startRoll(roll));
@@ -41,6 +47,16 @@ public class DiceOfFateClient implements ClientModInitializer {
             client.execute(() -> {
                 if (client.player != null) {
                     client.setScreen(new WagerScreen(diceType, hand));
+                }
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(DiceOfFateNetworking.OPEN_RED_DICE_PACKET, (client, handler, buf, responseSender) -> {
+            int handOrdinal = buf.readInt();
+            Hand hand = Hand.values()[Math.max(0, Math.min(Hand.values().length - 1, handOrdinal))];
+            client.execute(() -> {
+                if (client.player != null) {
+                    client.setScreen(new RedDiceEffectScreen(hand));
                 }
             });
         });

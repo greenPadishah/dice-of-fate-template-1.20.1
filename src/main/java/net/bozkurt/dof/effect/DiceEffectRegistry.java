@@ -33,4 +33,14 @@ public final class DiceEffectRegistry {
         }
         return list.get(random.nextInt(list.size()));
     }
+
+    public static List<DiceEffect> getAllEffects() {
+        List<DiceEffect> allEffects = new ArrayList<>();
+        for (DiceType type : DiceType.values()) {
+            for (EffectAlignment alignment : EffectAlignment.values()) {
+                allEffects.addAll(EFFECTS.get(type).get(alignment));
+            }
+        }
+        return allEffects;
+    }
 }

@@ -3,6 +3,8 @@ package net.bozkurt.dof;
 import net.bozkurt.dof.item.ModItemGroups;
 import net.bozkurt.dof.item.ModItems;
 import net.bozkurt.dof.effect.DiceEffects;
+import net.bozkurt.dof.entity.ModEntities;
+import net.bozkurt.dof.event.PlayerJoinHandler;
 import net.bozkurt.dof.logic.DiceEffectScheduler;
 import net.bozkurt.dof.network.DiceOfFateNetworking;
 import net.fabricmc.api.ModInitializer;
@@ -19,8 +21,10 @@ public class DiceOfFate implements ModInitializer {
 	public void onInitialize() {
 		ModItemGroups.registerModItemGroups();
 		ModItems.registerModItems();
+		ModEntities.register();
 		DiceEffects.registerDefaults();
 		DiceOfFateNetworking.registerServerReceivers();
+		PlayerJoinHandler.register();
 		ServerTickEvents.END_SERVER_TICK.register(DiceEffectScheduler::tick);
 	}
 }
