@@ -3,23 +3,34 @@ package net.bozkurt.dof.effect;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import net.bozkurt.dof.logic.DiceEffectScheduler;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.passive.WolfEntity;
+import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Heightmap;
 import net.minecraft.util.collection.DefaultedList;
 
 public final class DiceEffects {
@@ -234,8 +245,289 @@ public final class DiceEffects {
             })
         );
 
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_lucky_loot", (player, random) -> {
+                int count = 5 + random.nextInt(11);
+                List<Item> lootItems = List.of(
+                    Items.IRON_INGOT, Items.IRON_INGOT, Items.IRON_INGOT,
+                    Items.COOKED_BEEF, Items.COOKED_MUTTON, Items.BREAD,
+                    Items.ARROW, Items.ARROW, Items.ARROW,
+                    Items.TORCH, Items.TORCH, Items.OAK_LOG,
+                    Items.COAL, Items.STICK, Items.COBBLESTONE,
+                    Items.STRING, Items.FEATHER, Items.ACACIA_LOG
+                );
+                for (int i = 0; i < count; i++) {
+                    Item item = lootItems.get(random.nextInt(lootItems.size()));
+                    int stackSize = Math.min(item.getMaxCount(), 1 + random.nextInt(4));
+                    player.getInventory().insertStack(new ItemStack(item, stackSize));
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_strength_boost", (player, random) -> {
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 45 * 20, 0));
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_speed_boost", (player, random) -> {
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 30 * 20, 1));
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_golden_apple", (player, random) -> {
+                player.getInventory().insertStack(new ItemStack(Items.ENCHANTED_GOLDEN_APPLE, 1));
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_mob_ally", (player, random) -> {
+                ServerWorld world = player.getServerWorld();
+                for (int i = 0; i < 2; i++) {
+                    WolfEntity wolf = new WolfEntity(EntityType.WOLF, world);
+                    wolf.setPos(player.getX() + (i * 2) - 1, player.getY(), player.getZ());
+                    wolf.setOwner(player);
+                    wolf.setTamed(true);
+                    world.spawnEntity(wolf);
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_ore_burst", DiceEffects::oreBlast)
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_mini_totem", (player, random) -> {
+                player.getInventory().insertStack(new ItemStack(Items.TOTEM_OF_UNDYING, 1));
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_exp_shower", (player, random) -> {
+                int levels = 5 + random.nextInt(16);
+                player.addExperience(levels * 7);
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_light_blessing", DiceEffects::placeTorches)
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.GOOD,
+            new SimpleDiceEffect("white_repair_pulse", (player, random) -> {
+                repairInventoryItems(player);
+            })
+        );
+
+        // WHITE DICE - BAD EFFECTS (10 new)
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_mob_ambush", (player, random) -> {
+                ServerWorld world = player.getServerWorld();
+                int mobCount = 3 + random.nextInt(3);
+                EntityType<?>[] mobTypes = {EntityType.ZOMBIE, EntityType.SKELETON, EntityType.CREEPER, EntityType.SPIDER};
+                for (int i = 0; i < mobCount; i++) {
+                    EntityType<?> type = mobTypes[random.nextInt(mobTypes.length)];
+                    if (type.create(world) instanceof HostileEntity mob) {
+                        mob.setPos(player.getX() + random.nextInt(10) - 5, player.getY(), player.getZ() + random.nextInt(10) - 5);
+                        world.spawnEntity(mob);
+                    }
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_hunger_curse", (player, random) -> {
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 45 * 20, 2));
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_lightning_strike", (player, random) -> {
+                ServerWorld world = player.getServerWorld();
+                double radius = 8.0;
+                double offsetX = (random.nextDouble() - 0.5) * radius * 2;
+                double offsetZ = (random.nextDouble() - 0.5) * radius * 2;
+                BlockPos strikePos = new BlockPos((int)(player.getX() + offsetX), (int)player.getY(), (int)(player.getZ() + offsetZ));
+                world.setBlockState(strikePos, Blocks.FIRE.getDefaultState());
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_armor_shuffle", (player, random) -> {
+                DefaultedList<ItemStack> armor = player.getInventory().armor;
+                for (int i = 0; i < armor.size() - 1; i++) {
+                    int randomIdx = random.nextInt(armor.size());
+                    ItemStack temp = armor.get(i);
+                    armor.set(i, armor.get(randomIdx));
+                    armor.set(randomIdx, temp);
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_hotbar_scramble", (player, random) -> {
+                DefaultedList<ItemStack> main = player.getInventory().main;
+                for (int i = 0; i < 9; i++) {
+                    int randomIdx = random.nextInt(9);
+                    ItemStack temp = main.get(i);
+                    main.set(i, main.get(randomIdx));
+                    main.set(randomIdx, temp);
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_blindness", (player, random) -> {
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 20, 0));
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_slowness", (player, random) -> {
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 30 * 20, 1));
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_creeper_surprise", (player, random) -> {
+                ServerWorld world = player.getServerWorld();
+                CreeperEntity creeper = new CreeperEntity(EntityType.CREEPER, world);
+                Direction behind = player.getHorizontalFacing().getOpposite();
+                BlockPos spawnPos = player.getBlockPos().offset(behind, 3);
+                creeper.setPos(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+                world.spawnEntity(creeper);
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_water_trap", (player, random) -> {
+                ServerWorld world = player.getServerWorld();
+                BlockPos pos = player.getBlockPos();
+                for (int x = -1; x <= 1; x++) {
+                    for (int y = -1; y <= 2; y++) {
+                        for (int z = -1; z <= 1; z++) {
+                            BlockPos waterPos = pos.add(x, y, z);
+                            if (world.getBlockState(waterPos).isAir()) {
+                                world.setBlockState(waterPos, Blocks.WATER.getDefaultState());
+                            }
+                        }
+                    }
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.WHITE, EffectAlignment.BAD,
+            new SimpleDiceEffect("white_xp_drain", (player, random) -> {
+                player.addExperience(-5 * 7);
+            })
+        );
+
+        // BLACK DICE - GOOD EFFECTS (10 new)
         DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
-            new SimpleDiceEffect("black_good_loot_chest", DiceEffects::spawnLootChest)
+            new SimpleDiceEffect("black_treasure_vault", DiceEffects::treasureVault)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_diamond_rain", DiceEffects::diamondRain)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_heros_blessing", DiceEffects::heroBlessing)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_mob_army", DiceEffects::mobArmy)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_ore_transmutation", DiceEffects::oreTransmutation)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_time_freeze", DiceEffects::timeFreeze)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_totem_surge", (player, random) -> {
+                player.getInventory().insertStack(new ItemStack(Items.TOTEM_OF_UNDYING, 3));
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_sky_platform", DiceEffects::skyPlatform)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_fortune_touch", (player, random) -> {
+                ItemStack held = player.getMainHandStack();
+                if (!held.isEmpty()) {
+                    held.addEnchantment(Enchantments.FORTUNE, 5);
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.GOOD,
+            new SimpleDiceEffect("black_nether_jackpot", DiceEffects::netherJackpot)
+        );
+
+        // BLACK DICE - BAD EFFECTS (10 new)
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_wither_gamble", DiceEffects::witherGamble)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_random_stop", DiceEffects::randomStop)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_mini_raid", DiceEffects::miniRaid)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_meteor_strike", DiceEffects::meteorStrike)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_nether_swap", DiceEffects::netherSwap)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_mob_evolution", DiceEffects::mobEvolution)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_inventory_wipe", (player, random) -> {
+                DefaultedList<ItemStack> main = player.getInventory().main;
+                int itemsToRemove = Math.min(5, main.size());
+                for (int i = 0; i < itemsToRemove; i++) {
+                    int randomIdx = random.nextInt(main.size());
+                    main.set(randomIdx, ItemStack.EMPTY);
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_curse_binding", (player, random) -> {
+                DefaultedList<ItemStack> armor = player.getInventory().armor;
+                int randomArmorIdx = random.nextInt(armor.size());
+                ItemStack armorPiece = armor.get(randomArmorIdx);
+                if (!armorPiece.isEmpty()) {
+                    NbtCompound tag = armorPiece.getOrCreateNbt();
+                    tag.putBoolean("Curse", true);
+                }
+            })
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_grim_reaper", DiceEffects::grimReaper)
+        );
+
+        DiceEffectRegistry.register(DiceType.BLACK, EffectAlignment.BAD,
+            new SimpleDiceEffect("black_dragon_glare", DiceEffects::dragonGlare)
+
         );
     }
 
@@ -329,11 +621,13 @@ public final class DiceEffects {
             player.sendMessage(Text.literal("No space for the loot chest."), true);
             return;
         }
+        spawnLootChestAt(world, chestPos, player.getHorizontalFacing().getOpposite(), random);
+    }
 
-        world.setBlockState(chestPos, Blocks.CHEST.getDefaultState().with(ChestBlock.FACING, player.getHorizontalFacing().getOpposite()), 3);
+    private static void spawnLootChestAt(ServerWorld world, BlockPos chestPos, Direction facing, Random random) {
+        world.setBlockState(chestPos, Blocks.CHEST.getDefaultState().with(ChestBlock.FACING, facing), 3);
         BlockEntity blockEntity = world.getBlockEntity(chestPos);
         if (!(blockEntity instanceof ChestBlockEntity chest)) {
-            player.sendMessage(Text.literal("The loot chest failed to appear."), true);
             return;
         }
 
@@ -427,4 +721,356 @@ public final class DiceEffects {
         double targetY = Math.min(world.getTopY() - 1, player.getY() + 120.0);
         player.teleport(world, player.getX(), targetY, player.getZ(), player.getYaw(), player.getPitch());
     }
+
+    // Helper methods for new effects
+    private static void oreBlast(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        int radius = 10;
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    BlockPos checkPos = pos.add(x, y, z);
+                    if (world.getBlockState(checkPos).isOf(Blocks.STONE)) {
+                        if (random.nextInt(15) == 0) {
+                            world.setBlockState(checkPos, Blocks.IRON_ORE.getDefaultState());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void placeTorches(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        int radius = 10;
+        int placed = 0;
+        int attempts = 0;
+        while (placed < 24 && attempts < 200) {
+            int x = pos.getX() + random.nextInt(radius * 2 + 1) - radius;
+            int z = pos.getZ() + random.nextInt(radius * 2 + 1) - radius;
+            BlockPos columnPos = new BlockPos(x, 0, z);
+            BlockPos topPos = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, columnPos);
+            BlockPos torchPos = topPos.up();
+            if (world.getBlockState(torchPos).isAir() && world.getBlockState(topPos).isSolidBlock(world, topPos)) {
+                world.setBlockState(torchPos, Blocks.TORCH.getDefaultState());
+                placed++;
+            }
+            attempts++;
+        }
+    }
+
+    private static void treasureVault(ServerPlayerEntity player, Random random) {
+        spawnLootChest(player, random);
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        int mobCount = 3 + random.nextInt(3);
+        EntityType<?>[] mobTypes = {EntityType.ZOMBIE, EntityType.SKELETON, EntityType.CREEPER};
+        for (int i = 0; i < mobCount; i++) {
+            EntityType<?> type = mobTypes[random.nextInt(mobTypes.length)];
+            if (type.create(world) instanceof HostileEntity mob) {
+                mob.setPos(pos.getX() + random.nextInt(30) - 15, pos.getY() + 1, pos.getZ() + random.nextInt(30) - 15);
+                world.spawnEntity(mob);
+            }
+        }
+    }
+
+    private static void diamondRain(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        int diamondCount = 5 + random.nextInt(16);
+        for (int i = 0; i < diamondCount; i++) {
+            ItemStack diamond = new ItemStack(Items.DIAMOND);
+            double offsetX = (random.nextDouble() - 0.5) * 30;
+            double offsetZ = (random.nextDouble() - 0.5) * 30;
+            ItemScatterer.spawn(world, pos.getX() + offsetX, pos.getY() + 50, pos.getZ() + offsetZ, diamond);
+        }
+    }
+
+    private static void heroBlessing(ServerPlayerEntity player, Random random) {
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 60 * 20, 1));
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 60 * 20, 1));
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 60 * 20, 0));
+    }
+
+    private static void mobArmy(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        for (int i = 0; i < 5; i++) {
+            var golem = EntityType.IRON_GOLEM.create(world);
+            if (golem != null) {
+                golem.setPos(pos.getX() + random.nextInt(10) - 5, pos.getY() + 1, pos.getZ() + random.nextInt(10) - 5);
+                world.spawnEntity(golem);
+            }
+        }
+    }
+
+    private static void oreTransmutation(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        int radius = 15;
+        int[] ores = {0, 0, 0, 1, 1, 2, 3};
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    BlockPos checkPos = pos.add(x, y, z);
+                    if (world.getBlockState(checkPos).isOf(Blocks.STONE)) {
+                        if (random.nextInt(20) == 0) {
+                            int oreType = ores[random.nextInt(ores.length)];
+                            switch (oreType) {
+                                case 0 -> world.setBlockState(checkPos, Blocks.IRON_ORE.getDefaultState());
+                                case 1 -> world.setBlockState(checkPos, Blocks.GOLD_ORE.getDefaultState());
+                                case 2 -> world.setBlockState(checkPos, Blocks.DIAMOND_ORE.getDefaultState());
+                                case 3 -> world.setBlockState(checkPos, Blocks.ANCIENT_DEBRIS.getDefaultState());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void timeFreeze(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        double px = player.getX();
+        double py = player.getY();
+        double pz = player.getZ();
+        // Find all mobs in a 20-block radius and apply slowness
+        var box = net.minecraft.util.math.Box.of(pos.toCenterPos(), 20, 20, 20);
+        for (var entity : world.getNonSpectatingEntities(net.minecraft.entity.Entity.class, box)) {
+            if (entity instanceof net.minecraft.entity.mob.MobEntity mob && entity != player) {
+                mob.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 15 * 20, 6));
+            }
+        }
+    }
+
+    private static void skyPlatform(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        double distance = random.nextInt(30) + 20;
+        double angle = random.nextDouble() * Math.PI * 2;
+        double offsetX = Math.cos(angle) * distance;
+        double offsetZ = Math.sin(angle) * distance;
+        double newX = pos.getX() + offsetX;
+        double newZ = pos.getZ() + offsetZ;
+        BlockPos platformPos = new BlockPos((int) newX, 200, (int) newZ);
+        
+        for (int x = -5; x <= 5; x++) {
+            for (int z = -5; z <= 5; z++) {
+                world.setBlockState(platformPos.add(x, 0, z), Blocks.OAK_PLANKS.getDefaultState());
+            }
+        }
+        
+        player.teleport(world, newX, 202, newZ, player.getYaw(), player.getPitch());
+
+        BlockPos chestPos = platformPos.add(0, 1, 0);
+        if (world.getBlockState(chestPos).isAir()) {
+            spawnLootChestAt(world, chestPos, Direction.SOUTH, random);
+        }
+    }
+
+    private static void netherJackpot(ServerPlayerEntity player, Random random) {
+        if (!player.getWorld().getDimensionKey().getValue().getPath().equals("overworld")) {
+            return;
+        }
+        List<Item> netherLoot = List.of(
+            Items.BLAZE_ROD, Items.NETHER_BRICK, Items.NETHERITE_SCRAP,
+            Items.NETHERITE_INGOT, Items.MAGMA_CREAM, Items.GHAST_TEAR
+        );
+        Item item = netherLoot.get(random.nextInt(netherLoot.size()));
+        int count = 1 + random.nextInt(3);
+        player.getInventory().insertStack(new ItemStack(item, count));
+        
+        ServerWorld world = player.getServerWorld();
+        var blaze = EntityType.BLAZE.create(world);
+        if (blaze != null) {
+            blaze.setPos(player.getX() + 3, player.getY(), player.getZ());
+            world.spawnEntity(blaze);
+        }
+    }
+
+    private static void witherGamble(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        var wither = EntityType.WITHER.create(world);
+        if (wither != null) {
+            wither.setPos(pos.getX() + 15, pos.getY(), pos.getZ());
+            wither.setHealth(50);
+            world.spawnEntity(wither);
+        }
+    }
+
+    private static void randomStop(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos safePos = findSafeSurfacePosition(world, player.getBlockPos(), 500, random);
+        if (safePos != null) {
+            player.teleport(world, safePos.getX() + 0.5, safePos.getY(), safePos.getZ() + 0.5, player.getYaw(), player.getPitch());
+        }
+    }
+
+    private static void miniRaid(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        EntityType<?>[] raidMobs = {EntityType.PILLAGER, EntityType.VINDICATOR, EntityType.EVOKER, EntityType.RAVAGER};
+        int mobCount = 5 + random.nextInt(4);
+        for (int i = 0; i < mobCount; i++) {
+            EntityType<?> type = raidMobs[random.nextInt(raidMobs.length)];
+            if (type.create(world) instanceof HostileEntity mob) {
+                mob.setPos(pos.getX() + random.nextInt(20) - 10, pos.getY() + 1, pos.getZ() + random.nextInt(20) - 10);
+                world.spawnEntity(mob);
+            }
+        }
+    }
+
+    private static void meteorStrike(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        int radius = 15;
+        int tntCount = 3 + random.nextInt(3);
+        for (int i = 0; i < tntCount; i++) {
+            BlockPos tntPos = pos.add(random.nextInt(radius * 2) - radius, random.nextInt(10) + 20, random.nextInt(radius * 2) - radius);
+            var tnt = new net.minecraft.entity.TntEntity(world, tntPos.getX() + 0.5, tntPos.getY(), tntPos.getZ() + 0.5, null);
+            tnt.setFuse(40);
+            tnt.setVelocity(0.0, -0.4, 0.0);
+            world.spawnEntity(tnt);
+        }
+    }
+
+    private static void netherSwap(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos center = player.getBlockPos();
+        buildWaterCage(world, center);
+        player.teleport(world, center.getX() + 0.5, center.getY() + 1, center.getZ() + 0.5, player.getYaw(), player.getPitch());
+    }
+
+    private static BlockPos findSafeSurfacePosition(ServerWorld world, BlockPos origin, int radius, Random random) {
+        for (int attempts = 0; attempts < 50; attempts++) {
+            int x = origin.getX() + random.nextInt(radius * 2 + 1) - radius;
+            int z = origin.getZ() + random.nextInt(radius * 2 + 1) - radius;
+            BlockPos topPos = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
+            BlockPos safe = findSafeColumnLocation(world, topPos);
+            if (safe != null) {
+                return safe;
+            }
+        }
+        return null;
+    }
+
+    private static BlockPos findSafeColumnLocation(ServerWorld world, BlockPos topPos) {
+        for (int i = 0; i < 12; i++) {
+            BlockPos ground = topPos.down(i);
+            BlockPos stand = ground.up();
+            BlockPos head = stand.up();
+            if (world.getBlockState(ground).isSolidBlock(world, ground)
+                && world.getBlockState(stand).isAir()
+                && world.getBlockState(head).isAir()) {
+                return stand;
+            }
+        }
+        return null;
+    }
+
+    private static void repairInventoryItems(ServerPlayerEntity player) {
+        repairList(player.getInventory().main);
+        repairList(player.getInventory().armor);
+        repairList(player.getInventory().offHand);
+    }
+
+    private static void repairList(DefaultedList<ItemStack> list) {
+        for (int i = 0; i < list.size(); i++) {
+            ItemStack stack = list.get(i);
+            if (stack.isEmpty() || !stack.isDamageable()) {
+                continue;
+            }
+            int maxDamage = stack.getMaxDamage();
+            int currentDamage = stack.getDamage();
+            if (currentDamage <= 0) {
+                continue;
+            }
+            int repairAmount = Math.max(1, maxDamage / 4);
+            stack.setDamage(Math.max(0, currentDamage - repairAmount));
+        }
+    }
+
+    private static void buildWaterCage(ServerWorld world, BlockPos center) {
+        int radius = 2;
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    BlockPos pos = center.add(x, y, z);
+                    boolean isEdge = Math.abs(x) == radius || Math.abs(y) == radius || Math.abs(z) == radius;
+                    if (!isEdge) {
+                        world.setBlockState(pos, Blocks.WATER.getDefaultState());
+                        continue;
+                    }
+
+                    boolean glassFace = (x == 0 && y == 0 && Math.abs(z) == radius)
+                        || (x == 0 && z == 0 && Math.abs(y) == radius)
+                        || (y == 0 && z == 0 && Math.abs(x) == radius);
+                    if (glassFace) {
+                        world.setBlockState(pos, Blocks.GLASS.getDefaultState());
+                    } else {
+                        world.setBlockState(pos, Blocks.STONE.getDefaultState());
+                    }
+                }
+            }
+        }
+    }
+
+    private static void mobEvolution(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        // Find all mobs in a 30-block radius and buff them
+        var box = net.minecraft.util.math.Box.of(pos.toCenterPos(), 30, 30, 30);
+        for (var entity : world.getNonSpectatingEntities(net.minecraft.entity.Entity.class, box)) {
+            if (entity instanceof net.minecraft.entity.mob.MobEntity mob && entity != player) {
+                mob.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 60 * 20, 0));
+                mob.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 60 * 20, 0));
+            }
+        }
+    }
+
+    private static void grimReaper(ServerPlayerEntity player, Random random) {
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 10 * 20, 2));
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 10 * 20, 3));
+        for (int i = 0; i < 10; i++) {
+            int delay = i * 20;
+            DiceEffectScheduler.schedule(player,
+                new SimpleDiceEffect("grim_reaper_bell", (target, rng) -> {
+                    target.getServerWorld().playSound(
+                        null,
+                        target.getBlockPos(),
+                        SoundEvents.BLOCK_NOTE_BLOCK_BELL.value(),
+                        SoundCategory.PLAYERS,
+                        2.0f,
+                        1.0f
+                    );
+                }),
+                delay
+            );
+        }
+    }
+
+    private static void dragonGlare(ServerPlayerEntity player, Random random) {
+        ServerWorld world = player.getServerWorld();
+        BlockPos pos = player.getBlockPos();
+        int phantomCount = 5 + random.nextInt(6);
+        for (int i = 0; i < phantomCount; i++) {
+            double angle = (Math.PI * 2 * i) / phantomCount;
+            double distance = 20;
+            double offsetX = Math.cos(angle) * distance;
+            double offsetZ = Math.sin(angle) * distance;
+            
+            var phantom = EntityType.PHANTOM.create(world);
+            if (phantom instanceof net.minecraft.entity.mob.PhantomEntity) {
+                net.minecraft.entity.mob.PhantomEntity phantomEntity = (net.minecraft.entity.mob.PhantomEntity) phantom;
+                phantomEntity.setPos(pos.getX() + offsetX, pos.getY() + 5, pos.getZ() + offsetZ);
+                phantomEntity.setTarget(player);
+                world.spawnEntity(phantomEntity);
+            }
+        }
+    }
 }
+
